@@ -1,3 +1,9 @@
 (test
  (name finite_kan_test)
+ (modules finite_kan_test)
  (libraries finite_kan))
+
+(test
+ (name finite_term_test)
+ (modules finite_term_test)
+ (libraries finite_term))

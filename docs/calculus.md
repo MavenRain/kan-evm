@@ -40,6 +40,10 @@ value against a new diagram. This API is not a substitute for dependent typing.
 
 ## Candidate dependent syntax boundary
 
+The [finite-term specification](finite-terms.md) now supplies an executable
+nondependent syntax with checked branches and environment-based evaluation.
+It does not discharge the dependent obligations below.
+
 The next specification must provide judgments for contexts, substitutions,
 universe levels, types, terms, and definitional equality. Candidate notation:
 

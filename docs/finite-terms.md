@@ -1,0 +1,79 @@
+# M1 first slice: explicit finite-fiber terms
+
+This fragment turns the M0 host callbacks into checked object-language branches.
+It does not complete M1 or establish a Kan-only dependent logical core.
+
+## Primitive inventory
+
+Types are finite atom sets, `Lan [(label, type)]`, and `Ran [(label, type)]`.
+The latter two describe a single target fiber of a finite discrete diagram:
+the labels enumerate exactly those source indices mapping to that target.
+Nested types are allowed. Atom sets and finite indexing labels are explicit
+metatheoretic generators, not derived logical constructors. There are no
+universes, recursive types, axioms, holes, function types or implicit coercions.
+
+Structural infrastructure consists of nearest-binder-first contexts, de Bruijn
+variables, and one payload binder per Lan elimination branch. Types contain no
+term variables. The public type constructors reject duplicate labels and sort
+labels recursively through already-constructed child types. Type equality is
+structural equality of these canonical representations; it is not semantic
+isomorphism or term conversion.
+
+## Checking rules
+
+The judgment is `Γ ⊢ term ⇐ type`. All calls supply an expected type. There is
+no inference, search or unchecked callback in the checker.
+
+| Term | Checking obligation |
+|---|---|
+| `Var i` | `i >= 0` and context entry `i` equals the expected type |
+| `Atom x` | Expected type is an atom set containing `x` |
+| `Tag (a, t)` | Expected type is Lan, with fiber `a : A`; check `t ⇐ A` |
+| `Section fields` | Expected type is Ran; exactly one checked term per fiber |
+| `Case {scrutinee; scrutinee_type; branches}` | Annotation is Lan; check scrutinee against it; for every fiber `a : A`, check its branch against the expected result type under `A :: Γ` |
+| `Project {section; section_type; label}` | Annotation is Ran; selected fiber equals the expected type; check section against annotation |
+
+Branch and section keys must match their fiber keys exactly, without duplicates.
+Every branch is checked, including unexecuted branches. An empty Lan permits
+elimination with zero branches but still requires a checked scrutinee. An empty
+Ran admits the empty section. Equal payloads at different tags remain distinct.
+
+## Computation
+
+`run` first checks a closed term and then evaluates it using an environment.
+Evaluation is eager. A section evaluates its components in sorted label order;
+a case evaluates its scrutinee, then only its selected branch with the payload
+prepended to the environment. Projection selects from the evaluated section.
+
+The intended beta equations are:
+
+```text
+case (tag a v) of branches  -->  branches[a][v/0]
+project (section fields) a -->  fields[a]
+```
+
+The implementation realizes payload substitution by environment extension.
+There is no implemented syntactic substitution operation, open-term normalizer,
+eta conversion or proof of preservation. Beta tests are executable evidence,
+not proofs of these metatheorems.
+
+## Resource and trust boundary
+
+Each visited term node consumes one unit from a single budget. Siblings share
+it. `run` shares the budget between checking and evaluation. A nonpositive
+remaining budget yields `Resource_exhausted`; it never means acceptance.
+
+This is a node-visit budget, not a hardened process resource limit. Sorting,
+list traversals, type equality, type construction and host stack/allocation
+are not metered. Inputs are assumed to be finite acyclic OCaml values; there
+is no untrusted serialization boundary. A future kernel must bound those costs
+and handle deep inputs before claiming robust resource control.
+
+## Remaining M1 work
+
+Pin the Lean comparison release and enumerate its safe features and axiom
+policy. Specify the dependent calculus and derive functions, pairs, naturals
+with induction and indexed vectors, or disclose the extra required primitives.
+Prove substitution and preservation for the implemented syntax. Define and
+justify deterministic conversion for any extension needing it. The present
+finite-fiber Ran is not a derivation of general dependent function types.

@@ -4,11 +4,16 @@ Investigate an EVM-targeting language whose logical constructors derive from a
 Kan-extension core, with Lean 4 logical expressiveness and OCaml-class measured
 compilation performance. These are acceptance criteria, not current capabilities.
 
-Current status: **M0 — finite discrete semantic laboratory**. The OCaml library
+Current status: **M0 complete; first M1 finite-term slice implemented**. The OCaml library
 validates finite diagrams and checks introductions and eliminations for their
 left and right Kan extensions. It is not a dependent type checker, proof kernel,
 or EVM compiler. Finite sets are supplied as metatheoretic inputs; this does not
 establish that they can be derived in the proposed language.
+
+The separate `Finite_term` library adds explicit Lan/Ran terms, annotated
+eliminations, typed checking errors and budgeted closed evaluation. It remains
+a nondependent finite-fiber fragment; M1's metatheory and dependent constructors
+are open. See the [primitive inventory and rules](docs/finite-terms.md).
 
 ```sh
 cd kan-evm

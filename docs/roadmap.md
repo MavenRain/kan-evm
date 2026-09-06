@@ -11,6 +11,10 @@ finite sets, dependent type safety, Lean compatibility, or EVM correctness.
 
 ## M1: pure calculus and reference checker
 
+Started: [explicit finite-fiber terms](finite-terms.md) have checking and closed
+evaluation with typed errors and a shared node budget. This is a nondependent
+first slice. The following milestone requirements remain open.
+
 Pin a Lean 4 release and enumerate its safe kernel features and axiom policy.
 Write the primitive inventory and computation rules before extending the model.
 Derive dependent functions, dependent pairs, natural numbers with induction,

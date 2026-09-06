@@ -1,2 +1,7 @@
 (library
- (name finite_kan))
+ (name finite_kan)
+ (modules finite_kan))
+
+(library
+ (name finite_term)
+ (modules finite_term))
