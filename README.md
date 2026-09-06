@@ -11,10 +11,11 @@ or EVM compiler. Finite sets are supplied as metatheoretic inputs; this does not
 establish that they can be derived in the proposed language.
 
 The separate `Finite_term` library adds explicit Lan/Ran terms, annotated
-eliminations, typed checking errors, budgeted closed evaluation and checked
-capture-avoiding substitution. It remains
-a nondependent finite-fiber fragment; M1's metatheory and dependent constructors
-are open. See the [primitive inventory and rules](docs/finite-terms.md).
+eliminations, typed checking errors, budgeted closed evaluation, checked
+capture-avoiding substitution and a fuel-bounded open-term beta normalizer with
+neutral forms. It remains a nondependent finite-fiber fragment; M1's metatheory
+and dependent constructors are open. See the
+[primitive inventory and rules](docs/finite-terms.md).
 
 ```sh
 cd kan-evm

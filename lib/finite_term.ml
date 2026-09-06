@@ -46,7 +46,8 @@ let variable index entries =
 
 let tick fuel = if fuel <= 0 then Error Resource_exhausted else Ok (fuel - 1)
 
-(* Both lists are sorted, so matching is independent of source field order. *)
+(* Both lists are sorted, so matching is independent of source field order. The
+   shared key names each aligned triple. *)
 let rec align types terms =
   match types, terms with
   | [], [] -> Ok []
@@ -56,7 +57,7 @@ let rec align types terms =
       let order = String.compare key label in
       if order < 0 then Error (Missing_label key)
       else if order > 0 then Error (Unexpected_label label)
-      else let* rest = align types terms in Ok ((ty, term) :: rest)
+      else let* rest = align types terms in Ok ((key, ty, term) :: rest)
 
 let rec check_term fuel context term expected =
   let* fuel = tick fuel in
@@ -79,7 +80,8 @@ let rec check_term fuel context term expected =
        | Ran fibers ->
            let* entries = canonical entries in
            let* pairs = align fibers entries in
-           check_many fuel (fun fuel (ty, term) -> check_term fuel context term ty) pairs
+           check_many fuel
+             (fun fuel (_label, ty, term) -> check_term fuel context term ty) pairs
        | Atoms _ | Lan _ -> Error Expected_ran)
   | Case { scrutinee; scrutinee_type; branches } ->
       (match scrutinee_type with
@@ -88,7 +90,7 @@ let rec check_term fuel context term expected =
            let* pairs = align fibers branches in
            let* fuel = check_term fuel context scrutinee scrutinee_type in
            check_many fuel
-             (fun fuel (payload_type, body) ->
+             (fun fuel (_label, payload_type, body) ->
                check_term fuel (payload_type :: context) body expected) pairs
        | Atoms _ | Ran _ -> Error Expected_lan)
   | Project { section; section_type; label } ->
@@ -132,9 +134,9 @@ and map_entries fuel depth replace = function
       let* rest, fuel = map_entries fuel depth replace rest in
       Ok ((label, term) :: rest, fuel)
 
-let substitute ~fuel ~context ~replacement ~replacement_type body expected =
-  let* fuel = check_term fuel context replacement replacement_type in
-  let* fuel = check_term fuel (replacement_type :: context) body expected in
+(* Unchecked substitution of [replacement] for index zero in [body]. Callers
+   must supply already checked inputs. It returns the remaining budget. *)
+let substitute_core fuel replacement body =
   let replace fuel depth index =
     if index < depth then Ok (Var index, fuel)
     else if index > depth then Ok (Var (index - 1), fuel)
@@ -146,7 +148,85 @@ let substitute ~fuel ~context ~replacement ~replacement_type body expected =
           Ok (Var (if index < cutoff then index else index + depth), fuel))
         replacement
   in
-  let* term, _remaining = map_variables fuel 0 replace body in Ok term
+  map_variables fuel 0 replace body
+
+let substitute ~fuel ~context ~replacement ~replacement_type body expected =
+  let* fuel = check_term fuel context replacement replacement_type in
+  let* fuel = check_term fuel (replacement_type :: context) body expected in
+  let* term, _remaining = substitute_core fuel replacement body in Ok term
+
+(* One unit per visited node, as in [map_variables] and [evaluate]. A Case of a
+   Tag also pays [substitute_core] and the reduction of the substituted body.
+   The expected type and the annotations direct every step, so reduction needs
+   no context: this fragment is nondependent. *)
+let rec reduce fuel term expected =
+  let* fuel = tick fuel in
+  match term with
+  | Var _ | Atom _ -> Ok (term, fuel)
+  | Tag (label, payload) ->
+      (match expected with
+       | Lan fibers ->
+           let* fiber = lookup label fibers in
+           let* payload, fuel = reduce fuel payload fiber in
+           Ok (Tag (label, payload), fuel)
+       | Atoms _ | Ran _ -> Error Expected_lan)
+  | Section entries ->
+      (match expected with
+       | Ran fibers ->
+           let* entries = canonical entries in
+           let* fields = align fibers entries in
+           let* entries, fuel = reduce_fields fuel fields in
+           Ok (Section entries, fuel)
+       | Atoms _ | Lan _ -> Error Expected_ran)
+  | Case { scrutinee; scrutinee_type; branches } ->
+      (match scrutinee_type with
+       | Lan fibers ->
+           let* branches = canonical branches in
+           let* scrutinee, fuel = reduce fuel scrutinee scrutinee_type in
+           (match scrutinee with
+            | Tag (label, payload) ->
+                let* body = lookup label branches in
+                let* body, fuel = substitute_core fuel payload body in
+                reduce fuel body expected
+            | Var _ | Case _ | Project _ ->
+                let* fields = align fibers branches in
+                let* branches, fuel = reduce_branches fuel fields expected in
+                Ok (Case { scrutinee; scrutinee_type; branches }, fuel)
+            (* Checking rejects these scrutinees. The error keeps [reduce] total. *)
+            | Atom _ | Section _ -> Error Expected_lan)
+       | Atoms _ | Ran _ -> Error Expected_lan)
+  | Project { section; section_type; label } ->
+      (match section_type with
+       | Ran fibers ->
+           let* actual = lookup label fibers in
+           if actual <> expected then Error Type_mismatch
+           else
+             let* section, fuel = reduce fuel section section_type in
+             (match section with
+              | Section entries -> let* field = lookup label entries in Ok (field, fuel)
+              | Var _ | Case _ | Project _ ->
+                  Ok (Project { section; section_type; label }, fuel)
+              | Atom _ | Tag _ -> Error Expected_ran)
+       | Atoms _ | Lan _ -> Error Expected_ran)
+and reduce_fields fuel = function
+  | [] -> Ok ([], fuel)
+  | (label, fiber, term) :: rest ->
+      let* term, fuel = reduce fuel term fiber in
+      let* rest, fuel = reduce_fields fuel rest in
+      Ok ((label, term) :: rest, fuel)
+(* Each aligned fiber binds the payload at index zero of its branch. That fiber
+   does not direct the reduction of the body; the expected type does. *)
+and reduce_branches fuel fields expected =
+  match fields with
+  | [] -> Ok ([], fuel)
+  | (label, _fiber, body) :: rest ->
+      let* body, fuel = reduce fuel body expected in
+      let* rest, fuel = reduce_branches fuel rest expected in
+      Ok ((label, body) :: rest, fuel)
+
+let normalize ~fuel ~context term expected =
+  let* fuel = check_term fuel context term expected in
+  let* term, _remaining = reduce fuel term expected in Ok term
 
 type value =
   | Atom_value of string

@@ -46,6 +46,28 @@ val check : fuel:int -> context:ty list -> term -> ty -> (unit, error) result
 val substitute : fuel:int -> context:ty list -> replacement:term ->
   replacement_type:ty -> term -> ty -> (term, error) result
 
+(** [normalize ~fuel ~context term expected] first checks [term] against
+    [expected] in [context]. Then it reduces the term to beta normal form. No
+    Case in the result has a Tag scrutinee. No Project in the result has a
+    Section section. Neutral forms stay: a variable, a Case on a neutral
+    scrutinee, and a Project of a neutral section. The branches of a neutral
+    Case are reduced at the expected type. In this nondependent fragment the
+    binder fiber does not direct beta reduction. Result sections and branches
+    use canonical label order, even when the input order differs. Annotations
+    do not change. There is no eta rule.
+
+    One budget covers the check and the reduction. The check charges one unit
+    per node. The reduction charges one unit per visited node. Each Case of a
+    Tag charges the substitution in addition: one unit per node of the selected
+    branch, plus one unit per replacement node at each substituted occurrence.
+    It then charges the reduction of the substituted body. For example,
+    [normalize] of a Case with scrutinee [Tag ("a", Atom "x")], annotation
+    [Lan ["a", Atoms ["x"]]] and branch [Var 0] at [Atoms ["x"]] needs ten
+    units: four to check, three to reduce the Case node and its scrutinee, two
+    to substitute, and one to reduce the substituted body. Exhaustion returns
+    [Resource_exhausted]. The result is not rechecked internally. *)
+val normalize : fuel:int -> context:ty list -> term -> ty -> (term, error) result
+
 type value =
   | Atom_value of string
   | Tag_value of string * value

@@ -74,3 +74,52 @@ empty fibers, malformed inputs including unused replacements, and exact fuel
 boundaries including repeated and unused occurrences. The corpus is not an
 exhaustive syntax enumeration or a substitution/preservation proof. Node fuel
 does not bound host stack, type operations or allocation.
+
+## M1 normalization slice - 2026-09-06
+
+Environment: OCaml 5.2.1, Dune 3.24.2. `opam exec -- dunecho build` reported
+0 errors and 0 warnings. All four custom test executables were invoked directly
+and exited 0. Their PASS lines are:
+
+```text
+_build/default/test/finite_kan_test.exe
+PASS malformed diagrams
+PASS introductions and eliminations
+PASS 39 exhaustive finite adjunction scenarios
+
+_build/default/test/finite_term_test.exe
+PASS finite term checking, beta evaluation, binders and resource limits
+
+_build/default/test/finite_substitution_test.exe
+PASS 6983 substitution typing and evaluation comparisons
+PASS finite substitution, capture avoidance and resource limits
+
+_build/default/test/finite_normalize_test.exe
+PASS 53 closed normal form and value comparisons
+PASS 415 open term recheck and idempotence comparisons
+PASS finite normalization, neutral forms, canonical order and resource limits
+```
+
+The normalization corpus reuses the substitution generator over four types (two
+atom sets, a singleton-fiber Lan and a two-field Ran) and six contexts: empty,
+one atom variable, one Lan variable, two different atom variables, one Ran
+variable and one two-fiber Lan variable. It also builds Cases annotated with a
+two-fiber Lan. Their two branches bind payloads of different types, and their
+bodies range over the payload variable and the closed atoms, so a wrong branch
+or a mislaid payload changes the result. Branch bodies are supplied in reversed
+label order. Every closed corpus normal form equals the term form of the value
+that `run` returns. Every open corpus normal form rechecks at its expected type
+in its context and is unchanged by a second normalization. Separate cases pin
+neutral Case and Project forms, a nested redex inside a branch of a neutral
+Case, the shift arithmetic for a Case of a Tag under an outer binder, canonical
+output order for unsorted sections and branches, rejected inputs that return
+`Missing_label`, `Unexpected_label`, `Type_mismatch` and `Invalid_atom` instead
+of a term, and three exact fuel boundaries: 10, 8 and 6 units, each of which
+returns `Resource_exhausted` with one unit less.
+
+Limits: the corpus is bounded and generated, not an exhaustive enumeration of
+the syntax. These results are executable evidence, not proofs of preservation,
+confluence or strong normalization. There is no eta rule, so normal forms are
+canonical only up to beta and label order. The normalizer does not recheck its
+own output; the tests do. Node fuel bounds visited term nodes only, not host
+stack, allocation, sorting or type operations.
