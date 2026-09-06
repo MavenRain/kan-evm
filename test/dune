@@ -1,0 +1,3 @@
+(test
+ (name finite_kan_test)
+ (libraries finite_kan))
