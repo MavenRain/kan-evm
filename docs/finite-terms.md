@@ -52,15 +52,46 @@ case (tag a v) of branches  -->  branches[a][v/0]
 project (section fields) a -->  fields[a]
 ```
 
-The implementation realizes payload substitution by environment extension.
-There is no implemented syntactic substitution operation, open-term normalizer,
-eta conversion or proof of preservation. Beta tests are executable evidence,
-not proofs of these metatheorems.
+The evaluator realizes payload substitution by environment extension. A separate
+checked syntactic substitution operation is described below. There is no
+open-term normalizer, eta conversion or proof of preservation. Beta tests and
+substitution comparisons are executable evidence, not metatheory proofs.
+
+## Checked syntactic substitution
+
+`substitute ~fuel ~context ~replacement ~replacement_type body expected` checks
+`Γ ⊢ replacement ⇐ A` first, then `A :: Γ ⊢ body ⇐ B`, where `Γ = context`,
+`A = replacement_type` and `B = expected`. On success it returns `body[replacement/0]`
+with the removed context entry discharged. The intended typing property is
+`Γ ⊢ body[replacement/0] ⇐ B`. This is tested, not yet formally proved.
+
+At depth `d` beneath Case branch binders, substitution maps a variable `i` to:
+
+| Condition | Result |
+|---|---|
+| `i < d` | `Var i`, bound within the body |
+| `i = d` | The replacement with its free indices increased by `d` |
+| `i > d` | `Var (i - 1)`, accounting for the removed context entry |
+
+Shifting the replacement tracks its own local binders: at local depth `c`, only
+indices `i >= c` increase. Case scrutinees use the current depth and every branch
+uses depth plus one. All other constructors preserve depth. Annotations contain
+no term variables and remain unchanged; source field order is preserved.
+
+The operation checks even an unused replacement, traverses every body branch,
+and performs no beta reduction. One shared budget pays for both input checks,
+one visit per body node, and one visit per replacement node at each substituted
+occurrence. No replacement traversal is charged when it is unused. For example,
+substituting `Atom "x"` into `Var 0` needs four visits: two checks, one body visit
+and one replacement visit. Exhaustion at any phase returns `Resource_exhausted`.
+The output is not rechecked internally; regression tests check output typing
+and compare its evaluation against the original Case/environment computation.
 
 ## Resource and trust boundary
 
 Each visited term node consumes one unit from a single budget. Siblings share
-it. `run` shares the budget between checking and evaluation. A nonpositive
+it. `run` shares the budget between checking and evaluation; `substitute` shares
+it between both checks and the substitution traversals. A nonpositive
 remaining budget yields `Resource_exhausted`; it never means acceptance.
 
 This is a node-visit budget, not a hardened process resource limit. Sorting,

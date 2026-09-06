@@ -32,6 +32,20 @@ type term =
     Fuel bounds visited term nodes, not elapsed time or host allocation. *)
 val check : fuel:int -> context:ty list -> term -> ty -> (unit, error) result
 
+(** [substitute ~fuel ~context ~replacement ~replacement_type body expected]
+    first checks [replacement] against [replacement_type] in [context], then
+    [body] against [expected] in [replacement_type :: context]. It removes
+    that nearest context entry by capture-avoiding substitution. The result
+    has type [expected] in [context]; it is not normalized or evaluated.
+
+    One budget covers both checks, each body node traversed, and each node of
+    the replacement traversed at every substituted occurrence. All branches
+    are visited. Field order and type annotations are preserved. Like [check],
+    this meters term visits only, not host stack, allocation or type operations.
+    Errors from either check propagate, even if the replacement is unused. *)
+val substitute : fuel:int -> context:ty list -> replacement:term ->
+  replacement_type:ty -> term -> ty -> (term, error) result
+
 type value =
   | Atom_value of string
   | Tag_value of string * value

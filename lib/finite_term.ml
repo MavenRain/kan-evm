@@ -105,6 +105,49 @@ and check_many fuel check = function
 let check ~fuel ~context term ty =
   let* _remaining = check_term fuel context term ty in Ok ()
 
+(* The callback sees the number of Case payload binders crossed. Traversal
+   preserves source field order and annotations; types contain no variables. *)
+let rec map_variables fuel depth replace term =
+  let* fuel = tick fuel in
+  match term with
+  | Var index -> replace fuel depth index
+  | Atom _ -> Ok (term, fuel)
+  | Tag (label, payload) ->
+      let* payload, fuel = map_variables fuel depth replace payload in
+      Ok (Tag (label, payload), fuel)
+  | Section entries ->
+      let* entries, fuel = map_entries fuel depth replace entries in
+      Ok (Section entries, fuel)
+  | Case { scrutinee; scrutinee_type; branches } ->
+      let* scrutinee, fuel = map_variables fuel depth replace scrutinee in
+      let* branches, fuel = map_entries fuel (depth + 1) replace branches in
+      Ok (Case { scrutinee; scrutinee_type; branches }, fuel)
+  | Project { section; section_type; label } ->
+      let* section, fuel = map_variables fuel depth replace section in
+      Ok (Project { section; section_type; label }, fuel)
+and map_entries fuel depth replace = function
+  | [] -> Ok ([], fuel)
+  | (label, term) :: rest ->
+      let* term, fuel = map_variables fuel depth replace term in
+      let* rest, fuel = map_entries fuel depth replace rest in
+      Ok ((label, term) :: rest, fuel)
+
+let substitute ~fuel ~context ~replacement ~replacement_type body expected =
+  let* fuel = check_term fuel context replacement replacement_type in
+  let* fuel = check_term fuel (replacement_type :: context) body expected in
+  let replace fuel depth index =
+    if index < depth then Ok (Var index, fuel)
+    else if index > depth then Ok (Var (index - 1), fuel)
+    else
+      (* Only free variables of the replacement move under the body's binders.
+         Binders inside the replacement retain their own indices. *)
+      map_variables fuel 0
+        (fun fuel cutoff index ->
+          Ok (Var (if index < cutoff then index else index + depth), fuel))
+        replacement
+  in
+  let* term, _remaining = map_variables fuel 0 replace body in Ok term
+
 type value =
   | Atom_value of string
   | Tag_value of string * value

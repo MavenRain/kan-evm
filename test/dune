@@ -7,3 +7,8 @@
  (name finite_term_test)
  (modules finite_term_test)
  (libraries finite_term))
+
+(test
+ (name finite_substitution_test)
+ (modules finite_substitution_test)
+ (libraries finite_term))

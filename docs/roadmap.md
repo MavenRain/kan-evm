@@ -11,8 +11,10 @@ finite sets, dependent type safety, Lean compatibility, or EVM correctness.
 
 ## M1: pure calculus and reference checker
 
-Started: [explicit finite-fiber terms](finite-terms.md) have checking and closed
-evaluation with typed errors and a shared node budget. This is a nondependent
+Started: [explicit finite-fiber terms](finite-terms.md) have checking, closed
+evaluation and checked syntactic substitution with typed errors and shared
+node budgets. Substitution has bounded typing and evaluation regression tests;
+its formal proof remains open. This is a nondependent
 first slice. The following milestone requirements remain open.
 
 Pin a Lean 4 release and enumerate its safe kernel features and axiom policy.
