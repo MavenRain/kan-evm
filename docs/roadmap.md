@@ -14,12 +14,17 @@ finite sets, dependent type safety, Lean compatibility, or EVM correctness.
 Started: [explicit finite-fiber terms](finite-terms.md) have checking, closed
 evaluation, checked syntactic substitution and a fuel-bounded open-term beta
 normalizer that keeps neutral forms, with typed errors and shared node budgets.
-Substitution has bounded typing and evaluation regression tests; its formal
-proof, and preservation for the normalizer, remain open. This is a nondependent
-first slice. The following milestone requirements remain open.
+The Lean package in `proofs/` mechanizes checker soundness/completeness,
+weakening, substitution, evaluation preservation, substitution/environment
+agreement, reduction gas and fuel properties, reduction typing, and normal
+forms. Public normalization preserves typing and its output rechecks.
+Status: finite-fragment mechanization is in progress. The final
+`normalize_agrees_with_run` theorem remains open, with helper lemmas in
+`NormalizeAgree.lean`. Strong normalization and confluence also remain
+open. This is a nondependent first slice.
 
-Pin a Lean 4 release and enumerate its safe kernel features and axiom policy.
-Write the primitive inventory and computation rules before extending the model.
+Lean 4.33.1 and its axiom policy are pinned in [Lean target](lean-target.md).
+The primitive inventory and computation rules are documented. Remaining work:
 Derive dependent functions, dependent pairs, natural numbers with induction,
 and a length-indexed vector eliminator. Implement explicit term checking with
 typed errors, no inference or proof search in the kernel, and deterministic

@@ -101,7 +101,7 @@ model. Checked against https://lean-lang.org/doc/reference/latest/Axioms/
 top-level theorem before it counts as done. The command reports the full
 transitive axiom set, not just the axioms named in the proof term
 directly. Checked against the Axioms URL above. Policy for the D5
-mechanization, the next M1 slice: no axiom beyond the three above.
+mechanization under `proofs/`: no axiom beyond the three above.
 `sorryAx` anywhere in the transitive set fails the theorem, with no
 exception. `native_decide` anywhere in the set must be disclosed and
 re-derived without it, because it trusts the compiler, not the kernel.
@@ -124,7 +124,7 @@ only a table of contents, not body text. The list above states each
 construct's commonly documented behavior and stays unverified against
 the manual text until a fetch succeeds.
 
-The D5 mechanization, the next M1 slice, must disclose any use of these
+The D5 mechanization under `proofs/` must disclose any use of these
 next to its axiom list (section 2), and the disclosure counts as a gap,
 not as done.
 
@@ -144,6 +144,6 @@ not as done.
 | Definitional equality: delta, zeta | Open; kan-evm has no let-binding or named-constant unfolding construct. | Add `let` and top-level definitions with delta/zeta rules; scope not yet assigned. |
 | Proof irrelevance | Open; kan-evm has no `Prop`-like sort (D3, D6). | Depends on D3 (universes) and D6 (identity types); not scoped for M1. |
 | Nat and String literal reduction | Open; kan-evm has no `Nat` or `String` primitive with literal reduction. | D2's Nat induction principle is a prerequisite; literal reduction is not yet scoped. |
-| The three standard axioms | Applies to the D5 mechanization, the next M1 slice, under `proofs/`. A proof term may depend on `propext`, `Quot.sound` and `Classical.choice`, and on no other axiom. | The mechanization slice proves the metatheory.md propositions about the implemented finite fragment and reports its axiom set with `#print axioms`. |
-| Axiom accounting (`#print axioms`) | Applies to the D5 mechanization slice. Every top-level theorem it adds must pass the check before it counts as done. | Run on every theorem the slice adds, per the policy in section 2. |
-| Safe-core exclusions (`unsafe`, `partial`, `sorryAx`, `native_decide`) | Applies to the D5 mechanization slice. Its proofs must not depend on any excluded construct, and must not use `sorry`. | The slice's theorems must type-check with none of `unsafe`, `partial`, `sorryAx` or `native_decide` in the transitive axiom or definition set. |
+| The three standard axioms | All 33 audited theorem names use only `propext`, `Quot.sound` and `Classical.choice`. | Keep this bar for the remaining normalization/evaluation agreement proof. |
+| Axiom accounting (`#print axioms`) | `proofs/Axioms.lean` reports the 30 completed inventory theorem names and three public normalization corollaries. Results are in `validation.md`. | Extend the report as further theorems land. |
+| Safe-core exclusions (`unsafe`, `partial`, `sorryAx`, `native_decide`) | The proof-source scan has no excluded declarations or proof placeholders. The 33 audited theorem names pass the axiom bar. | Maintain these checks for subsequent proofs. |

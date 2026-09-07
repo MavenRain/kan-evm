@@ -397,9 +397,13 @@ the matching bound needs strong normalization, which section 12 lists as open.
 1. Fuel is not part of the typing relation. The relation of section 3 carries no budget,
    and `check` decides it only at a budget of at least `size(t)`. A `Resource_exhausted`
    result is neither acceptance nor refutation.
-2. Not yet mechanized. Every proof above is written by hand, so it may hold errors that a
-   kernel would catch. The next M1 slice mechanizes these propositions under `proofs/`,
-   per the D5 ruling of 2026-09-06.
+2. Mechanization is in progress under `proofs/` on Lean 4.33.1. The completed
+   theorem names and their transitive axiom sets are recorded in
+   [validation](validation.md#m1-mechanization). These prove properties of the
+   Lean deep embedding, whose differences from OCaml are recorded in
+   [FIDELITY.md](../proofs/FIDELITY.md). Section 11.5,
+   `normalize_agrees_with_run`, remains unproved. Claim C7 remains an open
+   successful-fuel obligation and has no theorem declaration.
 3. Strong normalization is not proved, and confluence is not proved. Section 11.4 assumes
    a large enough budget.
 4. The host stack is unbounded. Fuel meters term node visits only. It does not meter
