@@ -54,17 +54,17 @@ project (section fields) a -->  fields[a]
 
 The evaluator realizes payload substitution by environment extension. A separate
 checked syntactic substitution operation is described below. A fuel-bounded
-open-term normalizer applies the same two equations to open terms. There is no
-eta conversion and no proof of preservation. Beta tests and
-substitution comparisons are executable evidence, not metatheory proofs.
+open-term normalizer applies the same two equations. There is no eta conversion.
+[Lean proofs](../proofs/README.md) establish preservation for the deep embedding;
+OCaml beta tests and substitution comparisons remain executable evidence.
 
 ## Checked syntactic substitution
 
 `substitute ~fuel ~context ~replacement ~replacement_type body expected` checks
 `Γ ⊢ replacement ⇐ A` first, then `A :: Γ ⊢ body ⇐ B`, where `Γ = context`,
 `A = replacement_type` and `B = expected`. On success it returns `body[replacement/0]`
-with the removed context entry discharged. The intended typing property is
-`Γ ⊢ body[replacement/0] ⇐ B`. This is tested, not yet formally proved.
+with the removed context entry discharged. The typing property
+`Γ ⊢ body[replacement/0] ⇐ B` is proved for the Lean embedding and tested in OCaml.
 
 At depth `d` beneath Case branch binders, substitution maps a variable `i` to:
 
@@ -140,10 +140,10 @@ variable branch needs six.
 
 What this does not establish: there is no eta rule, so normal forms are equal
 only up to beta and canonical label order. The output is not rechecked
-internally. Preservation of typing under reduction, strong normalization and
-confluence are not proved. The tests compare closed normal forms with `run`
-values, recheck open normal forms, and test idempotence on a bounded corpus.
-That is executable evidence, not metatheory.
+internally. The Lean embedding has typing preservation and successful closed
+agreement with `run` at independent budgets. Strong normalization and confluence
+remain unproved. OCaml tests compare `run` values, recheck open normal forms,
+and test idempotence; they do not prove equivalence with the Lean embedding.
 
 ## Resource and trust boundary
 
@@ -161,9 +161,9 @@ and handle deep inputs before claiming robust resource control.
 
 ## Remaining M1 work
 
-Pin the Lean comparison release and enumerate its safe features and axiom
-policy. Specify the dependent calculus and derive functions, pairs, naturals
-with induction and indexed vectors, or disclose the extra required primitives.
-Prove substitution and preservation for the implemented syntax. Define and
-justify deterministic conversion for any extension needing it. The present
-finite-fiber Ran is not a derivation of general dependent function types.
+Lean 4.33.1 and its axiom policy are pinned; substitution and preservation are
+proved for the [Lean embedding](../proofs/README.md). Implement the specified
+[dependent calculus](dependent-calculus.md), including functions, pairs, naturals
+and vectors with disclosed extra induction primitives; justify its conversion.
+Successful normalization fuel bounds, strong normalization, confluence and OCaml/Lean
+equivalence remain open. Finite-fiber Ran does not derive general dependent functions.

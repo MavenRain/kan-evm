@@ -18,10 +18,10 @@ The Lean package in `proofs/` mechanizes checker soundness/completeness,
 weakening, substitution, evaluation preservation, substitution/environment
 agreement, reduction gas and fuel properties, reduction typing, and normal
 forms. Public normalization preserves typing and its output rechecks.
-Status: finite-fragment mechanization is in progress. The final
-`normalize_agrees_with_run` theorem remains open, with helper lemmas in
-`NormalizeAgree.lean`. Strong normalization and confluence also remain
-open. This is a nondependent first slice.
+Status: the finite-fragment theorem inventory is mechanized, including
+`normalize_agrees_with_run`: successful closed normalization agrees with `run`
+at independent budgets. A successful normalization fuel bound, strong
+normalization and confluence remain open. This is a nondependent Lean embedding.
 
 Lean 4.33.1 and its axiom policy are pinned in [Lean target](lean-target.md).
 The primitive inventory and computation rules are documented. Remaining work:

@@ -134,6 +134,7 @@ public `KanEvmProofs` root. No Lean errors or warnings were reported.
 ```sh
 lake +leanprover/lean4:v4.33.1 --dir proofs build
 lake +leanprover/lean4:v4.33.1 --dir proofs env lean proofs/Axioms.lean
+lake +leanprover/lean4:v4.33.1 --dir proofs env lean proofs/test/Agreement.lean
 ```
 
 The axiom command's source path is relative to the calling repository root.
@@ -143,7 +144,7 @@ Final full-build line:
 Build completed successfully (20 jobs).
 ```
 
-The 30 completed inventory theorem names and three public normalization
+The 31 completed inventory theorem names and three public normalization
 corollaries report these transitive dependencies:
 
 ```text
@@ -180,6 +181,7 @@ corollaries report these transitive dependencies:
 'normalize_preserves_type' depends on axioms: [propext, Classical.choice, Quot.sound]
 'normalize_output_checks' depends on axioms: [propext, Classical.choice, Quot.sound]
 'normalize_normal_form' depends on axioms: [propext, Classical.choice, Quot.sound]
+'normalize_agrees_with_run' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
 The proof-source scan found no proof placeholders, added axioms, unsafe or
@@ -192,7 +194,8 @@ the embedding to OCaml; they do not prove equivalence of the two implementations
 A separate Lake client required the local `proofs/` package and imported
 `KanEvmProofs`. Its build checked `check_sound`, `substitution_at_depth`,
 `normalize_preserves_type`, `normalize_output_checks`, and
-`normalize_normal_form`, and exited 0. The initial client check detected that
+`normalize_normal_form`, and `normalize_agrees_with_run`, and exited 0.
+The initial client check detected that
 the submodule-only Lake glob omitted the root module. The package now uses
 `andSubmodules` so both the root and all submodules compile.
 
@@ -201,11 +204,23 @@ exited 0. All four runners retained the nine PASS lines recorded above,
 including 6983 substitution comparisons, 53 closed normalization comparisons,
 and 415 open-term comparisons.
 
-Remaining: `normalize_agrees_with_run` (section 11.5) is not yet declared.
-`NormalizeAgree.lean` contains helper lemmas only. Claim C7 remains open:
-no successful normalization fuel bound is proved. Strong normalization,
-confluence, dependent calculus, and EVM compilation are also unproved.
-The three public normalization corollaries assume a successful result and
+`normalize_agrees_with_run` proves section 11.5 for the Lean embedding:
+successful closed normalization and execution, at independent budgets, return
+the normalized term and its equal quoted value. The core `NormAgree.agreeGas`
+also proves that the normalized output evaluates to that value at some budget.
+It requires successful reduction and evaluation, with no typing premise.
+
+`proofs/test/Agreement.lean` imports only `KanEvmProofs` and checks both general
+contracts. Four concrete theorem applications supply their successful premises
+by `rfl`: case substitution at normalization/evaluation budgets 10/8, a reversed
+section with a nested tag at 8/9, nested binders selecting the outer payload at
+20/14, and projection from the reversed section at 10/11. The test file is
+outside the library modules and the command above checks it separately.
+
+Remaining: Claim C7 is open, so no successful normalization fuel bound is proved.
+Strong normalization, confluence, dependent calculus, and EVM compilation
+are also unproved.
+The normalization corollaries and agreement theorem assume successful results and
 therefore make no termination or successful-fuel claim.
 Row Lemma2b holds under two names: `reduce_step_charge` of
 `proofs/KanEvmProofs/Budget.lean` states the charge of a case of a tag, and

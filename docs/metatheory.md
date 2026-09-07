@@ -1,11 +1,11 @@
 # Metatheory of the implemented finite-fiber fragment
 
-These are paper proofs about `lib/finite_term.ml`. No proof assistant has checked
-them yet. The runners in `test/` are evidence for the same statements, not proofs of them.
-The user ruled D5 on 2026-09-06: the next M1 slice mechanizes these propositions.
-That slice adds an in-repo Lean 4 package under `proofs/`, a lakefile project with
-kan-tactics as its only tactic dependency, toolchain pinned per `docs/lean-target.md`.
-Until that package lands, no proof assistant has checked the propositions below. The
+These are paper proofs about `lib/finite_term.ml`, with corresponding finite-fragment
+theorems checked in the Lean deep embedding under `proofs/`. The runners in `test/`
+are executable evidence, not proofs. Decision D5's mechanization package uses
+kan-tactics, with the toolchain pinned per `docs/lean-target.md`. Its successful
+normalization/evaluation agreement assumes both calls succeed at independent budgets;
+Claim C7 stays open. [FIDELITY.md](../proofs/FIDELITY.md) records the OCaml/Lean differences. The
 Lean reference manual is at https://lean-lang.org/doc/reference/latest/.
 
 ## 1. Notation and standing assumptions
@@ -352,8 +352,8 @@ and each branch reduces under `fiber :: G` at `A`. `reduce_fields` rebuilds sect
 fields in that same sorted order, so a Section output meets the SECTION side condition
 even when the input order differed.
 Claim C6, to verify: `normalize` does not recheck its own output
-(`docs/finite-terms.md:142`), so this proof is the only argument that the output is well
-typed; `test/finite_normalize_test.ml` rechecks output on a bounded corpus as evidence.
+(`docs/finite-terms.md:142`); this paper proof addresses the OCaml output typing claim.
+Lean proves its embedded counterpart; OCaml tests recheck a bounded corpus as evidence.
 
 11.4 Normal forms. If `reduce f t A = Ok (t', rest)` then `t'` has no Case with a Tag
 scrutinee and no Project with a Section section. Proof: strong induction on the budget.
@@ -397,15 +397,15 @@ the matching bound needs strong normalization, which section 12 lists as open.
 1. Fuel is not part of the typing relation. The relation of section 3 carries no budget,
    and `check` decides it only at a budget of at least `size(t)`. A `Resource_exhausted`
    result is neither acceptance nor refutation.
-2. Mechanization is in progress under `proofs/` on Lean 4.33.1. The completed
+2. The finite-fragment inventory is mechanized under `proofs/` on Lean 4.33.1. Its
    theorem names and their transitive axiom sets are recorded in
    [validation](validation.md#m1-mechanization). These prove properties of the
    Lean deep embedding, whose differences from OCaml are recorded in
-   [FIDELITY.md](../proofs/FIDELITY.md). Section 11.5,
-   `normalize_agrees_with_run`, remains unproved. Claim C7 remains an open
-   successful-fuel obligation and has no theorem declaration.
+   [FIDELITY.md](../proofs/FIDELITY.md). Section 11.5's `normalize_agrees_with_run`
+   assumes successful closed normalization and evaluation at independent budgets.
+   Claim C7 remains an open successful-fuel obligation with no theorem declaration.
 3. Strong normalization is not proved, and confluence is not proved. Section 11.4 assumes
-   a large enough budget.
+   successful reduction at a supplied budget.
 4. The host stack is unbounded. Fuel meters term node visits only. It does not meter
    host stack depth, allocation, sorting, list traversal, or type equality
    (`docs/finite-terms.md:156-160`). A deep input can exhaust the host stack first.

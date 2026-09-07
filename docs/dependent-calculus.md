@@ -329,7 +329,7 @@ The user ruled on all seven decisions on 2026-09-06.
 | D2 induction | (a) primitive inductive family former with a disclosed initiality assumption and a not-Kan-only flag; (b) admit infinite diagrams; (c) defer Nat and Vec to M2 | (a) | M1 states the Nat and Vec rules and marks them as extra rules, so the core claim stays visible. (b) breaks the finiteness and computability assumptions of calculus.md. (c) hides the claim instead of testing it |
 | D3 universes | (a) none at M1, type families carried by `Γ ⊢ A type`; (b) one universe now | (a) | This document writes no `U_l`, and the universe obligation stays open for M2 |
 | D4 conversion strength | (a) beta only, canonical field order, eta disclosed as a gap; (b) beta plus eta now | (a) | The eta rules above stay unimplemented, and `docs/lean-target.md` carries the gap entry |
-| D5 proof medium | (a) paper proofs now in `docs/metatheory.md` with a panel pass, Lean mechanization as a later slice in an in-repo `proofs/` lakefile project; (b) mechanize now | (b) | The next M1 slice adds an in-repo Lean 4 package under `proofs/`: a lakefile project, toolchain pinned per `docs/lean-target.md`, with kan-tactics as its only tactic dependency. That package states and proves the propositions of `docs/metatheory.md` about the implemented finite fragment, with axiom accounting on every theorem and no `sorry`, `unsafe`, `partial` or `native_decide`. Until it lands, no proof assistant has checked those propositions. The finite denotation proposition in this document concerns only the implemented `Atoms`/`Lan`/`Ran` fragment. It is outside this mechanization scope and remains a paper proof |
+| D5 proof medium | (a) paper proofs now in `docs/metatheory.md` with a panel pass, Lean mechanization as a later slice in an in-repo `proofs/` lakefile project; (b) mechanize now | (b) | The in-repo Lean 4 package under `proofs/` mechanizes the finite-fragment theorem inventory of `docs/metatheory.md`, including successful closed normalization/evaluation agreement at independent budgets. Its toolchain is pinned per `docs/lean-target.md`, and kan-tactics is its only tactic dependency. The audited theorems have axiom accounting and no `sorry`, `unsafe`, `partial` or `native_decide`. These are proofs of the Lean deep embedding; `proofs/FIDELITY.md` records differences from OCaml. C7, strong normalization and confluence remain open. The finite denotation proposition in this document concerns only the implemented `Atoms`/`Lan`/`Ran` fragment; it remains a paper proof outside the mechanization scope |
 | D6 identity types | (a) out of scope and disclosed, because the recursor form needs no index equality; (b) add them now for constructor injectivity | (a) | No transport rule and no no-confusion rule at M1 |
 | D7 conversion reference | (a) confirm `Finite_term.normalize` as the reference for the fragment it covers; (b) veto it and specify a separate routine | (a) | The conversion obligation narrows to the dependent case and to the four unproved properties above |
 
@@ -354,8 +354,8 @@ No other row changes.
 - No rule here is implemented. The code covers the nondependent fragment only.
 - The finite denotation proposition covers only the implemented
   `Atoms`/`Lan`/`Ran` fragment and remains a paper proof. Its mechanization
-  is not scheduled; the next M1 slice mechanizes the metatheory.md
-  propositions under `proofs/`.
+  is not scheduled; `proofs/` instead mechanizes the finite-fragment
+  metatheory inventory, with C7 still open, for a Lean deep embedding.
 - No model of this calculus is exhibited, so Beck-Chevalley is a requirement
   here and not a theorem.
 - The two Lean claims (definitional eta; eliminators without identity types) are

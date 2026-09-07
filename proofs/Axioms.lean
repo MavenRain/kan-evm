@@ -1,5 +1,4 @@
 -- Axiom report for completed finite-fragment inventory theorems and public corollaries.
--- The normalization/evaluation agreement theorem remains open.
 import KanEvmProofs.Canonical
 import KanEvmProofs.Budget
 import KanEvmProofs.Weakening
@@ -9,6 +8,7 @@ import KanEvmProofs.Evaluation
 import KanEvmProofs.EvalSubst
 import KanEvmProofs.NormalizeCore
 import KanEvmProofs.NormalizeTyping
+import KanEvmProofs.NormalizeAgree
 
 #print axioms ty_canonical
 #print axioms canonical_beq_iff
@@ -43,3 +43,4 @@ import KanEvmProofs.NormalizeTyping
 #print axioms normalize_preserves_type
 #print axioms normalize_output_checks
 #print axioms normalize_normal_form
+#print axioms normalize_agrees_with_run

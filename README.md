@@ -18,11 +18,11 @@ constructors and part of M1's metatheory remain open. See the
 [primitive inventory and rules](docs/finite-terms.md).
 
 The reusable Lean 4.33.1 package in [proofs/](proofs/README.md) mechanizes
-checker soundness/completeness, substitution, evaluation preservation, and
-normalizer typing and normal-form guarantees for a deep embedding of this
-fragment. The 33 audited theorem names depend only on `propext`,
-`Classical.choice`, and `Quot.sound`. Normalization/evaluation agreement,
-strong normalization, and confluence remain open. The
+checker soundness/completeness, substitution, evaluation preservation, normalizer
+typing and normal-form guarantees, and successful closed normalization/evaluation
+agreement for a deep embedding of this fragment. Its 34 audited theorem names
+depend only on `propext`, `Classical.choice`, and `Quot.sound`. A successful
+normalization fuel bound, strong normalization, and confluence remain open. The
 [fidelity table](proofs/FIDELITY.md) records the embedding differences.
 
 ```sh
