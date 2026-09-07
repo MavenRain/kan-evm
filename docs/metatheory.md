@@ -7,6 +7,8 @@ kan-tactics, with the toolchain pinned per `docs/lean-target.md`. Its successful
 normalization/evaluation agreement assumes both calls succeed at independent budgets;
 Claim C7 stays open. [FIDELITY.md](../proofs/FIDELITY.md) records the OCaml/Lean differences. The
 Lean reference manual is at https://lean-lang.org/doc/reference/latest/.
+The lib/finite_term.ml line citations in this document refer to commit 1bf3524. The
+conversion slice moves every line after ml:229 by eight lines.
 
 ## 1. Notation and standing assumptions
 

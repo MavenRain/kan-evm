@@ -14,6 +14,9 @@ finite sets, dependent type safety, Lean compatibility, or EVM correctness.
 Started: [explicit finite-fiber terms](finite-terms.md) have checking, closed
 evaluation, checked syntactic substitution and a fuel-bounded open-term beta
 normalizer that keeps neutral forms, with typed errors and shared node budgets.
+`Finite_term.convert` now checks and normalizes both terms under one shared
+budget and compares their canonical normal forms. This completes the executable
+finite-fragment comparison step, with beta only and exhaustion as inconclusive.
 The Lean package in `proofs/` mechanizes checker soundness/completeness,
 weakening, substitution, evaluation preservation, substitution/environment
 agreement, reduction gas and fuel properties, reduction typing, and normal

@@ -66,7 +66,7 @@ arbitrary category equality as a decision procedure for term conversion.
 | Induction | Nat induction and indexed vector elimination, not just Church encodings | Open |
 | Prop and quotients | Lean-compatible eliminations, irrelevance and computation policy | Open |
 | Safety | Weakening, substitution, preservation and appropriate progress theorem | Open |
-| Conversion algorithm | Soundness, completeness for chosen equality, termination | Open |
+| Conversion algorithm | Soundness, completeness for chosen equality, termination | Finite normalize-and-compare implemented by `Finite_term.convert`, with typed errors and a shared node budget; declarative soundness/completeness, confluence, strong normalization and dependent conversion remain open |
 | Lean embedding | Typing and reduction preservation with explicit axiom accounting | Open |
 | Efficient representation | Correctness of sharing and specialized derived forms | Open |
 

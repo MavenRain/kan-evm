@@ -224,9 +224,17 @@ and reduce_branches fuel fields expected =
       let* rest, fuel = reduce_branches fuel rest expected in
       Ok ((label, body) :: rest, fuel)
 
-let normalize ~fuel ~context term expected =
+let normalize_core fuel context term expected =
   let* fuel = check_term fuel context term expected in
-  let* term, _remaining = reduce fuel term expected in Ok term
+  reduce fuel term expected
+
+let normalize ~fuel ~context term expected =
+  let* term, _remaining = normalize_core fuel context term expected in Ok term
+
+let convert ~fuel ~context left right expected =
+  let* left, fuel = normalize_core fuel context left expected in
+  let* right, _remaining = normalize_core fuel context right expected in
+  Ok (left = right)
 
 type value =
   | Atom_value of string

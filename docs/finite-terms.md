@@ -145,17 +145,50 @@ agreement with `run` at independent budgets. Strong normalization and confluence
 remain unproved. OCaml tests compare `run` values, recheck open normal forms,
 and test idempotence; they do not prove equivalence with the Lean embedding.
 
+## Conversion
+
+`convert ~fuel ~context left right expected` checks and normalizes `left`, then
+checks and normalizes `right` using the budget left by the first normalization.
+It compares the resulting terms structurally, including their annotations.
+Both sides use the same context and expected type. Sections and neutral Case
+branches compare in canonical label order because normalization sorts them.
+
+| Result | Meaning |
+|---|---|
+| `Ok true` | Both terms checked and normalized to the same form |
+| `Ok false` | Both terms checked and normalized to different forms |
+| `Error error` | The first failing check or normalization, in left-to-right order |
+
+Identical source terms still undergo both checks and normalizations. A failure
+on the right cannot become inequality, and `Resource_exhausted` is inconclusive.
+There is no eta conversion: an open Ran variable and a Section of all its
+projections compare unequal. Distinct free variables and distinct Lan tags
+also remain distinct. The operation does not compare semantic isomorphisms.
+
+The fuel cost is the sum of both normalization costs. Comparing two atoms needs
+four units, even when their labels differ. Comparing the ten-unit Case above
+with its result atom needs twelve; eleven returns `Resource_exhausted`. The final
+structural comparison spends no fuel, just as structural type equality spends
+none during checking. These limits are node budgets, not process resource limits.
+
+The [Lean conversion module](../proofs/KanEvmProofs/Conversion.lean)
+connects successful decisions to the two normal
+forms and to successful closed execution. This does not prove soundness or
+completeness against a declarative conversion judgment, confluence, strong
+normalization, or equivalence between the OCaml and Lean implementations.
+
 ## Resource and trust boundary
 
 Each visited term node consumes one unit from a single budget. Siblings share
 it. `run` shares the budget between checking and evaluation; `substitute` shares
 it between both checks and the substitution traversals; `normalize` shares it
-between the check and every reduction and substitution visit. A nonpositive
+between the check and every reduction and substitution visit. `convert` shares
+it across both checks and both normalizations. A nonpositive
 remaining budget yields `Resource_exhausted`; it never means acceptance.
 
 This is a node-visit budget, not a hardened process resource limit. Sorting,
-list traversals, type equality, type construction and host stack/allocation
-are not metered. Inputs are assumed to be finite acyclic OCaml values; there
+list traversals, structural term and type equality, type construction and host
+stack/allocation are not metered. Inputs are assumed to be finite acyclic OCaml values; there
 is no untrusted serialization boundary. A future kernel must bound those costs
 and handle deep inputs before claiming robust resource control.
 

@@ -1,8 +1,9 @@
 # Fidelity table of the Lean mechanization
 
-Stage S2-S0 of the kan-evm M1 mechanization, 2026-09-06. Decision S2-D9 fixes this table.
+Stage S2-S0 of the kan-evm M1 mechanization, 2026-09-06, extended by the conversion slice
+on 2026-09-07. Decision S2-D9 fixes this table.
 
-The table holds one row per Lean definition that stage S2-S0 landed. `ml` is
+The table holds one row per Lean definition that the mechanization has landed. `ml` is
 lib/finite_term.ml and `mli` is lib/finite_term.mli. The columns are the Lean name, the OCaml
 lines the definition mirrors, the recursion shape, the charge points and any difference from
 the OCaml source. A charge point is a call of `tick`, which mirrors ml:47 and is the one place
@@ -12,6 +13,11 @@ that spends the budget, per decision S2-D4. The whole package holds five charge 
 This table is a trusted artifact. A reviewer signs it in the build log. No proof depends on it.
 The executable half of the fidelity claim is proofs/KanEvmProofs/Fidelity.lean, which gate
 S2-G5 builds, and the measured fuel numbers of decision S2-D10 hold there through `rfl`.
+
+The original tables and proof docstrings use OCaml line numbers from commit
+`1bf3524`. The conversion slice factors `normalize_core` out of `normalize`
+and inserts `convert`, shifting later lines without changing evaluation.
+The conversion table below uses definition names as anchors in the current code.
 
 ## KanEvmProofs/Syntax.lean
 
@@ -165,6 +171,33 @@ the two first order pairs `shift` with `shiftEntries` and `sub` with `subEntries
 recursion. The gas parameter is never observable, which `check_gas_irrelevant` and
 `reduce_gas_irrelevant` state.
 
+## KanEvmProofs/Conversion.lean
+
+This extension mirrors the finite comparison API. Definition names below refer
+to the current OCaml source, independently of the original tables' line numbers.
+
+| Lean name | OCaml definition | recursion shape | charge points | difference |
+| --- | --- | --- | --- | --- |
+| `Term.beq`, `Term.beqEntries` | Structural `=` in `convert` | Mutual structural recursion over terms and entry lists | None | Lean spells out OCaml's structural comparison, including annotations through `Ty.beq`. `term_beq_iff` and `term_beqEntries_iff` prove literal equality in both directions without a canonicity assumption. The existing representation differences for variables and types still apply. |
+| `normalizeWithRest` | `normalize_core` | None | None added | Returns the normalized term and unused budget. It selects the same checker and reducer gas as the existing Lean `normalize`. `normalizeWithRest_normalize` connects their successful results. |
+| `convert` | `convert` | None | None added | Both call the normalization helper on the left, then on the right with the leftover budget, then compare. The comparison is unmetered on both sides. Negative OCaml fuel has no Lean `Nat` image; both reject zero before visiting a term. |
+| `instance : BEq Term` | Structural `=` in `convert` | None | None | It gives the `==` notation for `Term.beq`. The tree calls `Term.beq` directly and registers no `LawfulBEq Term`. |
+
+`convert_success_iff` characterizes successful decisions by the two helper
+results, with the first remainder becoming the second starting budget.
+`convert_true_iff` specializes that contract to identical normal forms.
+`normalizeWithRest_spec` establishes input typing, output typing and normality;
+`convert_inputs_typed` establishes both operand typings for either Boolean
+answer. `convert_agrees_with_run` equates quoted successful closed executions
+when conversion returns true, at independent execution budgets.
+
+These contracts concern the Lean embedding. They do not establish OCaml/Lean
+equivalence or soundness and completeness for a declarative equality judgment.
+The separate `proofs/test/Conversion.lean` file tests concrete shared budgets
+and the public root import; the OCaml conversion runner supplies matching
+fuel-boundary regressions.
+
 ## Signature
 
 A reviewer of stage S2-S0 signs this table in the build log, per decision S2-D9.
+A reviewer of the conversion slice signs the KanEvmProofs/Conversion.lean table in the build log.

@@ -68,6 +68,24 @@ val substitute : fuel:int -> context:ty list -> replacement:term ->
     [Resource_exhausted]. The result is not rechecked internally. *)
 val normalize : fuel:int -> context:ty list -> term -> ty -> (term, error) result
 
+(** [convert ~fuel ~context left right expected] checks and normalizes [left],
+    then checks and normalizes [right] with the remaining shared budget.
+    [Ok true] means their beta normal forms are structurally equal, including
+    annotations, with canonical section and branch order. [Ok false] means
+    both normalizations succeeded and produced different forms. No eta rule or
+    semantic isomorphism is used. Open terms use the same context on both sides.
+
+    Errors propagate in that left-to-right order. Even identical operands must
+    pass checking and normalization; exhaustion is [Error Resource_exhausted],
+    never a Boolean answer. The visit cost is the sum of the two [normalize]
+    costs: two atoms need four units, and the ten-unit Case above compared with
+    its result atom needs twelve. Structural comparison spends no fuel. Like
+    type equality, sorting and allocation, its cost is outside the node budget.
+    Equality soundness/completeness for a declarative conversion judgment,
+    confluence and strong normalization are not established by this API. *)
+val convert : fuel:int -> context:ty list -> term -> term -> ty ->
+  (bool, error) result
+
 type value =
   | Atom_value of string
   | Tag_value of string * value

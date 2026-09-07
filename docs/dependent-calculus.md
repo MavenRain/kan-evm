@@ -3,7 +3,8 @@
 This document specifies the dependent extension planned for M1. It is a
 specification, not a report of implemented code. The implemented code is the
 nondependent finite fragment in `lib/finite_term.ml`, with rules in
-[finite-terms.md](finite-terms.md). No rule below is implemented. The user
+[finite-terms.md](finite-terms.md). The dependent rules below are not implemented;
+the conversion algorithm is implemented for the finite fragment. The user
 ruled on decisions D1 to D7 on 2026-09-06. This document states each ruled
 option and its consequence.
 
@@ -285,19 +286,23 @@ algorithm takes Γ, a type, two terms and a fuel budget.
 
 1. Normalize both terms against the type in Γ under the shared budget.
    `normalize` checks its input against the expected type before it reduces,
-   so conversion needs no separate check step (lib/finite_term.mli:49-50,
-   lib/finite_term.ml:227-229). A typed error propagates.
+   so conversion needs no separate check step. A typed error propagates.
 2. Compare the two normal forms structurally, with labels in canonical order.
 
 The answer is equal, not equal, or `Resource_exhausted`. Exhaustion is
 inconclusive: it is never equality and never acceptance.
 
 `Finite_term.normalize` is the reference implementation of step 1 for the
-nondependent fragment (lib/finite_term.mli:69, lib/finite_term.ml:227-229). It
-checks, reduces to beta normal form, keeps neutral forms, and emits canonical
-label order. Step 2 has no implementation in the repository today. The
-library exports no term comparison routine, so the structural compare stays
-specification only. D7 confirms `normalize` as the reference for step 1. Type equality needs the same
+nondependent fragment. It checks, reduces to beta normal form, keeps neutral
+forms, and emits canonical
+label order. `Finite_term.convert ~fuel ~context left right expected` implements
+both steps for that fragment. An internal `normalize_core` returns the remaining
+fuel, so the left check and reduction run before the right check and reduction
+under one shared budget. `Ok true` means identical resulting forms; `Ok false`
+means different resulting forms. Errors from either operand propagate, including
+exhaustion. There is no shortcut for identical or visibly different inputs.
+Structural comparison includes type annotations and spends no fuel.
+D7 confirms `normalize` as the reference for step 1. Type equality needs the same
 treatment once types mention terms. The implemented fragment compares types
 structurally, which is sound there because a `ty` holds no term variables. The
 dependent extension needs a type normalizer, and the code has none today.
@@ -313,10 +318,12 @@ visited node spends one fuel unit from a finite budget (lib/finite_term.mli:59-6
 Fuel meters visited term nodes only. The library states for `check` that fuel
 does not bound elapsed time or host allocation (lib/finite_term.mli:32), and
 for `substitute` that it meters term visits only, not host stack, allocation
-or type operations (lib/finite_term.mli:43-44). `normalize` reuses the same
-counter, so the same limits apply, and its own doc comment does not restate
-them. Termination by fuel is not strong normalization, and it is not a bound
-on host resources.
+or type operations (lib/finite_term.mli:43-44). `normalize` and `convert` reuse
+the same counter. Conversion's final structural comparison is unmetered.
+Termination by fuel is not strong normalization, and it is not a bound on host
+resources. The Lean conversion proofs characterize successful normal-form
+comparison and connect equality to quoted successful closed execution results;
+they do not settle the four properties above or prove OCaml/Lean equivalence.
 
 ## Decisions D1 to D7
 
@@ -347,11 +354,12 @@ No other row changes.
 | Primitive inventory | Complete syntax and rules, including all generators | Specified here for Π, Σ, Nat and Vec; not implemented; universes and identity types still absent |
 | Dependent products/sums | Formation, intro, elim, beta/eta and substitution | Specified here with beta; eta stated and deferred by D4; substitution stability stated as Beck-Chevalley and unproved |
 | Induction | Nat induction and indexed vector elimination, not just Church encodings | Rules stated as ASSUME-NAT and ASSUME-VEC; not Kan-only, because initiality is an extra principle |
-| Conversion algorithm | Soundness, completeness for chosen equality, termination | Algorithm fixed as normalize-and-compare, implemented for the nondependent fragment by `normalize`; soundness, completeness, confluence and strong normalization unproved |
+| Conversion algorithm | Soundness, completeness for chosen equality, termination | Normalize-and-compare implemented for the nondependent fragment by `convert` under one shared budget; soundness and completeness against the equality judgments, confluence and strong normalization unproved |
 
 ## Not established
 
-- No rule here is implemented. The code covers the nondependent fragment only.
+- The dependent rules are not implemented. Normalization and comparison cover
+  the nondependent fragment only.
 - The finite denotation proposition covers only the implemented
   `Atoms`/`Lan`/`Ran` fragment and remains a paper proof. Its mechanization
   is not scheduled; `proofs/` instead mechanizes the finite-fragment

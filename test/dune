@@ -17,3 +17,8 @@
  (name finite_normalize_test)
  (modules finite_normalize_test)
  (libraries finite_term))
+
+(test
+ (name finite_conversion_test)
+ (modules finite_conversion_test)
+ (libraries finite_term))

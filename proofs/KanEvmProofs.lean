@@ -8,3 +8,4 @@ import KanEvmProofs.EvalSubst
 import KanEvmProofs.NormalizeCore
 import KanEvmProofs.NormalizeTyping
 import KanEvmProofs.NormalizeAgree
+import KanEvmProofs.Conversion

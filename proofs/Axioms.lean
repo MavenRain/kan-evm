@@ -9,6 +9,7 @@ import KanEvmProofs.EvalSubst
 import KanEvmProofs.NormalizeCore
 import KanEvmProofs.NormalizeTyping
 import KanEvmProofs.NormalizeAgree
+import KanEvmProofs.Conversion
 
 #print axioms ty_canonical
 #print axioms canonical_beq_iff
@@ -44,3 +45,11 @@ import KanEvmProofs.NormalizeAgree
 #print axioms normalize_output_checks
 #print axioms normalize_normal_form
 #print axioms normalize_agrees_with_run
+#print axioms term_beq_iff
+#print axioms term_beqEntries_iff
+#print axioms normalizeWithRest_normalize
+#print axioms normalizeWithRest_spec
+#print axioms convert_success_iff
+#print axioms convert_true_iff
+#print axioms convert_inputs_typed
+#print axioms convert_agrees_with_run

@@ -11,3 +11,8 @@ require «kan-tactics» from git
 lean_lib «KanEvmProofs» where
   roots := #[`KanEvmProofs]
   globs := #[.andSubmodules `KanEvmProofs]
+
+@[default_target]
+lean_lib «KanEvmTests» where
+  srcDir := "test"
+  roots := #[`Agreement, `Conversion]

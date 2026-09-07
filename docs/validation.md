@@ -226,3 +226,78 @@ Row Lemma2b holds under two names: `reduce_step_charge` of
 `proofs/KanEvmProofs/Budget.lean` states the charge of a case of a tag, and
 `reduce_rest_lt` of `proofs/KanEvmProofs/NormalizeCore.lean` states that each
 entered node spends one unit of the budget.
+
+## M1 finite conversion
+
+Validated with OCaml 5.2.1 and Dune 3.24.2:
+
+```sh
+opam exec --switch=zxcaml-p1 -- dunecho build
+opam exec --switch=zxcaml-p1 -- dune runtest --force --root .
+```
+
+The build reported zero errors and zero warnings. All five test runners exited
+successfully, retaining the previous nine PASS lines and adding:
+
+```text
+PASS 11389 closed conversion and evaluation comparisons
+PASS 98 open conversion decisions and exact fuel boundaries
+PASS finite conversion, canonical forms, checked operands and shared fuel
+```
+
+The closed corpus compares every pair within four bounded groups of terms
+(atoms, Lan tags, Ran sections, and empty Ran sections), including Cases and
+projections. Its oracle compares independently evaluated `run` values. For the
+open corpus, the test searches each operand's minimum successful normalization
+budget independently, then requires conversion to succeed at their sum and
+exhaust at one unit less. It also compares the two independently obtained normal
+forms. These are bounded checks, not exhaustive enumeration of the syntax.
+
+Explicit regressions cover beta reduction, canonical sections and neutral Case
+branches, nested capture avoidance, distinct annotations in neutral eliminators,
+empty fibers, deferred eta, malformed identical inputs, invalid unexecuted
+branches, left-to-right error priority, and exhaustion before the right check.
+Atom comparison requires four visits; a ten-visit Case compared with its result
+atom requires twelve. Both equal and unequal answers require two successful
+normalizations.
+
+Four temporary mutants compiled and were rejected by the conversion runner:
+resetting the right operand's budget, accepting identical syntax before checking,
+comparing source syntax instead of normal forms, and turning right-side errors
+into `false`. The mutants were isolated from the repository sources.
+
+Lean 4.33.1 validation used the unchanged dependency pins:
+
+```sh
+lake +leanprover/lean4:v4.33.1 --dir proofs build
+lake +leanprover/lean4:v4.33.1 --dir proofs env lean proofs/test/Conversion.lean
+lake +leanprover/lean4:v4.33.1 --dir proofs env lean proofs/test/Agreement.lean
+lake +leanprover/lean4:v4.33.1 --dir proofs env lean proofs/Axioms.lean
+```
+
+The library build passed without warnings (24 jobs). The second default target
+`KanEvmTests` puts proofs/test/Agreement.lean and proofs/test/Conversion.lean in
+the build, so `lake build` elaborates both test modules. All 23 conversion
+examples and the existing agreement examples compiled. The new examples import
+only the public `KanEvmProofs` root. They cover successful and exhausted shared
+budgets, beta computation, invalid identical operands and unchosen branches, an
+invalid left operand against a valid right operand, canonical sections and
+neutral Cases, distinct variables and annotations, deferred eta, typing after a
+false result, the closed execution agreement corollary, and one quantified
+application of that corollary at independent budgets.
+
+All 42 axiom-report entries passed the existing allowlist. The two structural
+comparison theorems (`term_beq_iff`, `term_beqEntries_iff`) use only `propext`
+and `Quot.sound`. The other six new entries use only `propext`, `Classical.choice`
+and `Quot.sound`: `normalizeWithRest_normalize`, `normalizeWithRest_spec`,
+`convert_success_iff`, `convert_true_iff`, `convert_inputs_typed`, and
+`convert_agrees_with_run`. The new sources contain no proof placeholders,
+custom axioms, unsafe or partial declarations, native decision shortcuts, or
+tactic blocks.
+
+These theorems characterize successful comparison in the Lean embedding.
+Closed execution agreement assumes conversion returned true and both `run`
+calls succeeded at their independent budgets; its conclusion equates quoted
+values. Declarative conversion soundness/completeness, successful normalization
+fuel bounds, confluence, strong normalization and OCaml/Lean equivalence remain
+open.

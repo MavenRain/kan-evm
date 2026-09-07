@@ -12,15 +12,19 @@ establish that they can be derived in the proposed language.
 
 The separate `Finite_term` library adds explicit Lan/Ran terms, annotated
 eliminations, typed checking errors, budgeted closed evaluation, checked
-capture-avoiding substitution and a fuel-bounded open-term beta normalizer with
-neutral forms. It remains a nondependent finite-fiber fragment. Dependent
-constructors and part of M1's metatheory remain open. See the
+capture-avoiding substitution, a fuel-bounded open-term beta normalizer with
+neutral forms, and checked normalize-and-compare conversion under one shared
+budget. Conversion returns equality, inequality, or a typed error; exhaustion
+never counts as a Boolean answer. It remains a nondependent finite-fiber fragment.
+Dependent constructors and part of M1's metatheory remain open. See the
 [primitive inventory and rules](docs/finite-terms.md).
 
 The reusable Lean 4.33.1 package in [proofs/](proofs/README.md) mechanizes
 checker soundness/completeness, substitution, evaluation preservation, normalizer
 typing and normal-form guarantees, and successful closed normalization/evaluation
-agreement for a deep embedding of this fragment. Its 34 audited theorem names
+agreement for a deep embedding of this fragment. Conversion proofs establish
+structural comparison correctness, checked operands, and agreement with quoted
+successful closed executions. Its 42 audited theorem names
 depend only on `propext`, `Classical.choice`, and `Quot.sound`. A successful
 normalization fuel bound, strong normalization, and confluence remain open. The
 [fidelity table](proofs/FIDELITY.md) records the embedding differences.
