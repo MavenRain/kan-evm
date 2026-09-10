@@ -22,3 +22,8 @@
  (name finite_conversion_test)
  (modules finite_conversion_test)
  (libraries finite_term))
+
+(test
+ (name dependent_term_test)
+ (modules dependent_term_test)
+ (libraries dependent_term))

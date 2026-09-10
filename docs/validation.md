@@ -301,3 +301,65 @@ calls succeeded at their independent budgets; its conclusion equates quoted
 values. Declarative conversion soundness/completeness, successful normalization
 fuel bounds, confluence, strong normalization and OCaml/Lean equivalence remain
 open.
+
+## M1 initial dependent fragment - 2026-09-07
+
+Environment: OCaml 5.2.1, Dune 3.24.2. Validated an isolated copy of HEAD
+`8f01455` plus this slice at `/private/tmp/kan-evm-build.7H8UdA`:
+
+```sh
+opam exec -- dunecho build -- --root /private/tmp/kan-evm-build.7H8UdA
+opam exec -- dune runtest --force --root /private/tmp/kan-evm-build.7H8UdA
+```
+
+The build reported zero errors and zero warnings. All six test runners passed,
+with 13 PASS lines. The five finite runners retain their existing checks,
+including 39 adjunction scenarios, 6,983 substitution comparisons, 53 closed
+normalization comparisons, 415 open normalization comparisons, 11,389 closed
+conversion comparisons and 98 open conversion decisions. The new runner reports:
+
+```text
+PASS dependent formation, beta reduction, substitution, conversion and resource limits
+```
+
+The nine dependent test groups cover Pi/Sigma formation and elimination,
+Nat/Vec constructors and index checking, application and split capture avoidance,
+conversion and neutral forms, checked substitution through types and annotations,
+invalid inputs, generated beta cases, and shared fuel. The dependent pair
+`Sigma (Nat, Vec (a, Var 0))` is exercised with a split motive that mentions its
+bound pair. A separate `Sigma (Nat, Nat)` split case exercises a motive that
+mentions an older context variable. Invalid unused arguments, discarded pair
+components and malformed annotations are rejected. Conversion checks include left/right error priority and invalid
+identical operands.
+
+A bounded generated corpus at depths 0 through 8 compares open Nat/Pi/Sigma
+beta results with independently constructed normal forms. It rechecks normalized
+terms and checks dependent substitutions against separately instantiated
+expected types. All eight public operations have searched fuel-boundary checks
+and successful larger-budget checks. Six simple examples also fix independently
+known exact boundaries: Nat formation costs 1, Zero checking 2, Nat normalization
+2, Zero normalization 3, Nat type comparison 4, and Zero term comparison 5.
+
+Six isolated mutants compiled successfully and were rejected by the dependent
+runner, while the unmodified baseline built and passed. They changed variable
+weakening from i + 1 to i, reversed split replacement order, omitted substitution
+through Vec indices, reset the right conversion operand's budget, skipped index
+normalization, or skipped checking an application argument. Each mutant's build
+exited 0 and test exited 1. These probes used the initial passing dependent suite;
+the final suite adds the generated, error-priority and exact-boundary cases.
+
+The final diff passed whitespace checks, and the new OCaml sources contain no
+exception-raising constructs, assertions or unchecked casts. No independent
+review of this slice is recorded here; the reproducible evidence in this file is
+the build exit, the test exits and the mutants named above.
+Five defensive guards change no result at the current call sites, and thus no
+test observes them: the shift overflow and underflow arms
+(lib/dependent_core.ml:116-118), the two cutoff tests (lib/dependent_core.ml:122
+and 126), the binder depth overflow test (lib/dependent_core.ml:47) and the
+max_int index test (lib/dependent_term.ml:81). Documentation links and scope
+claims were checked as well.
+
+This is bounded executable evidence for the new OCaml library. Its dependent
+metatheory, Lean embedding, induction eliminators, confluence and conversion
+correctness remain open. Lean library sources, tests and dependency pins are
+unchanged; the earlier finite-fragment proof validation does not cover this slice.

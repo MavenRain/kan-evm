@@ -1,10 +1,11 @@
 # Dependent calculus: the M1 extension specification
 
-This document specifies the dependent extension planned for M1. It is a
-specification, not a report of implemented code. The implemented code is the
-nondependent finite fragment in `lib/finite_term.ml`, with rules in
-[finite-terms.md](finite-terms.md). The dependent rules below are not implemented;
-the conversion algorithm is implemented for the finite fragment. The user
+This document specifies the full dependent extension planned for M1. The
+nondependent finite fragment in `lib/finite_term.ml` has rules in
+[finite-terms.md](finite-terms.md). The separate `Dependent_term` library now
+implements Pi/Sigma, Nat/Vec constructors, dependent checking, substitution
+and beta conversion; [dependent-terms.md](dependent-terms.md) records its exact
+scope. The Nat and Vec induction eliminators below remain unimplemented. The user
 ruled on decisions D1 to D7 on 2026-09-06. This document states each ruled
 option and its consequence.
 
@@ -24,15 +25,17 @@ algorithm of the conversion section.
 
 A context is a list of types. Each entry may depend on the entries before it.
 Variables are de Bruijn indices, and index 0 names the nearest binder. This
-matches the implemented fragment (lib/finite_term.mli:30-31).
+matches both executable fragments. In `Dependent_term`, each context entry is
+written in its older tail, so lookup weakens entry i by i + 1 binders.
 
     -------- empty          Γ ctx    Γ ⊢ A type
     ⋄ ctx                   ------------------- extension
                             Γ.A ctx
 
-The implemented fragment has the extension rule under a restriction. Its types
+The finite fragment has the extension rule under a restriction. Its types
 hold no term variables, so `Γ ⊢ A type` holds for every Γ there. The dependent
-extension removes that restriction. A substitution σ from Δ to Γ is a list of
+extension removes that restriction, with formation checked by
+`Dependent_term.check_type`. A substitution σ from Δ to Γ is a list of
 terms of the types of Γ.
 
     Δ ⊢ σ : Γ    Γ ⊢ A type          Δ ⊢ σ : Γ    Γ ⊢ t : A
@@ -41,6 +44,9 @@ terms of the types of Γ.
 
 `Finite_term.substitute` implements the single variable case of the term rule
 (lib/finite_term.mli:46-47).
+`Dependent_term.substitute` and `substitute_type` implement the dependent single
+variable cases, traversing indices and annotations under binders. The latter
+operations have executable tests, but no dependent preservation proof yet.
 
 One notation convention holds for every rule below. When a type or a term
 written in a context appears in a longer context, read it under the
@@ -164,7 +170,7 @@ no execution reaches (docs/finite-terms.md:24-34). `Section` is `lam` at an
 enumeration, because a function out of an enumeration is a tuple of its n
 values, and `Project` is `app` at a literal atom.
 
-The implemented fragment restricts this special case twice. The fibers B(a_i) do
+The finite fragment restricts this special case twice. The fibers B(a_i) do
 not depend on the payload, because a `ty` holds no term variables. The motive C
 does not depend on the scrutinee, because `Case` checks every branch against one
 expected type. Removing the second restriction gives the dependent `Case`. That change needs
@@ -172,7 +178,7 @@ types that mention terms. So the first restriction must go first.
 
 ## Naturals and vectors are not finite Kan extensions
 
-**Proposition (finite denotation).** Every type of the implemented fragment
+**Proposition (finite denotation).** Every type of the finite fragment
 denotes a finite set of closed values.
 
 The proof is the induction below. Two further facts are needed for the
@@ -303,9 +309,10 @@ means different resulting forms. Errors from either operand propagate, including
 exhaustion. There is no shortcut for identical or visibly different inputs.
 Structural comparison includes type annotations and spends no fuel.
 D7 confirms `normalize` as the reference for step 1. Type equality needs the same
-treatment once types mention terms. The implemented fragment compares types
+treatment once types mention terms. `Finite_term` compares types
 structurally, which is sound there because a `ty` holds no term variables. The
-dependent extension needs a type normalizer, and the code has none today.
+dependent library now provides `normalize_type` and `convert_types`. It checks
+formation and normalizes indices and annotations before comparison.
 
 The algorithm is deterministic. The reduction traversal fixes the order of work,
 and there is no search, no unification and no user hint. The same input with the
@@ -315,7 +322,7 @@ Four properties stay unproved: soundness of the comparison against the equality
 judgments, completeness against them, confluence, and strong normalization. The
 algorithm returns an answer or reports `Resource_exhausted`, because each
 visited node spends one fuel unit from a finite budget (lib/finite_term.mli:59-67).
-Fuel meters visited term nodes only. The library states for `check` that fuel
+In `Finite_term`, fuel meters visited term nodes only. The library states for `check` that fuel
 does not bound elapsed time or host allocation (lib/finite_term.mli:32), and
 for `substitute` that it meters term visits only, not host stack, allocation
 or type operations (lib/finite_term.mli:43-44). `normalize` and `convert` reuse
@@ -324,6 +331,10 @@ Termination by fuel is not strong normalization, and it is not a bound on host
 resources. The Lean conversion proofs characterize successful normal-form
 comparison and connect equality to quoted successful closed execution results;
 they do not settle the four properties above or prove OCaml/Lean equivalence.
+`Dependent_term` additionally meters context entries and type traversals during
+formation, substitution, weakening and reduction. Its comparison has the same
+inconclusive exhaustion policy and no dependent Lean proof. See its
+[resource boundary](dependent-terms.md#resource-and-proof-boundaries).
 
 ## Decisions D1 to D7
 
@@ -351,15 +362,16 @@ No other row changes.
 
 | Obligation | Required evidence | Status |
 |---|---|---|
-| Primitive inventory | Complete syntax and rules, including all generators | Specified here for Π, Σ, Nat and Vec; not implemented; universes and identity types still absent |
-| Dependent products/sums | Formation, intro, elim, beta/eta and substitution | Specified here with beta; eta stated and deferred by D4; substitution stability stated as Beck-Chevalley and unproved |
+| Primitive inventory | Complete syntax and rules, including all generators | Π/Σ and Nat/Vec constructors implemented in Dependent_term; induction eliminators remain open; universes and identity types still absent |
+| Dependent products/sums | Formation, intro, elim, beta/eta and substitution | Pi/Sigma formation, introduction, elimination, beta and substitution implemented; dependent proofs open; eta deferred by D4; Beck-Chevalley unproved |
 | Induction | Nat induction and indexed vector elimination, not just Church encodings | Rules stated as ASSUME-NAT and ASSUME-VEC; not Kan-only, because initiality is an extra principle |
-| Conversion algorithm | Soundness, completeness for chosen equality, termination | Normalize-and-compare implemented for the nondependent fragment by `convert` under one shared budget; soundness and completeness against the equality judgments, confluence and strong normalization unproved |
+| Conversion algorithm | Soundness, completeness for chosen equality, termination | Checked normalize-and-compare implemented for the finite fragment and the initial dependent subset under shared budgets; soundness and completeness against the equality judgments, confluence and strong normalization unproved |
 
 ## Not established
 
-- The dependent rules are not implemented. Normalization and comparison cover
-  the nondependent fragment only.
+- The dependent Nat and Vec eliminators are not implemented. Normalization and
+  comparison cover the finite fragment and the initial dependent subset;
+  the existing Lean proofs cover the finite fragment only.
 - The finite denotation proposition covers only the implemented
   `Atoms`/`Lan`/`Ran` fragment and remains a paper proof. Its mechanization
   is not scheduled; `proofs/` instead mechanizes the finite-fragment
@@ -370,7 +382,7 @@ No other row changes.
   unverified in this document. Draft A verifies them.
 - Consistency is not addressed. ASSUME-NAT and ASSUME-VEC make that question
   harder, not easier.
-- Tests for this syntax, when they exist, are evidence and not theorems.
+- Tests for the implemented dependent subset are evidence and not theorems.
 
 ## References
 

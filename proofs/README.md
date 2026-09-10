@@ -1,6 +1,8 @@
 # Finite-fragment Lean proofs
 
 Reusable Lean 4.33.1 package for kan-evm's nondependent finite-term embedding.
+The separate OCaml `Dependent_term` library is not represented in this package;
+none of the theorem claims below apply to its dependent syntax.
 Build from the repository root:
 
 ```sh

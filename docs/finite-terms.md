@@ -195,8 +195,10 @@ and handle deep inputs before claiming robust resource control.
 ## Remaining M1 work
 
 Lean 4.33.1 and its axiom policy are pinned; substitution and preservation are
-proved for the [Lean embedding](../proofs/README.md). Implement the specified
-[dependent calculus](dependent-calculus.md), including functions, pairs, naturals
-and vectors with disclosed extra induction primitives; justify its conversion.
+proved for the [Lean embedding](../proofs/README.md). The separate
+[dependent fragment](dependent-terms.md) implements functions, pairs and Nat/Vec
+constructors from the [dependent calculus](dependent-calculus.md). Complete its
+induction eliminators with disclosed extra primitives and dependent metatheory;
+justify conversion for both fragments.
 Successful normalization fuel bounds, strong normalization, confluence and OCaml/Lean
 equivalence remain open. Finite-fiber Ran does not derive general dependent functions.

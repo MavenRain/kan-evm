@@ -27,11 +27,20 @@ at independent budgets. A successful normalization fuel bound, strong
 normalization and confluence remain open. This is a nondependent Lean embedding.
 
 Lean 4.33.1 and its axiom policy are pinned in [Lean target](lean-target.md).
-The primitive inventory and computation rules are documented. Remaining work:
-Derive dependent functions, dependent pairs, natural numbers with induction,
-and a length-indexed vector eliminator. Implement explicit term checking with
-typed errors, no inference or proof search in the kernel, and deterministic
-conversion. Resource exhaustion must be reported as inconclusive, never accepted.
+The primitive inventory and computation rules are documented. The separate
+[dependent reference fragment](dependent-terms.md) now implements Pi/Sigma
+formation, introductions, eliminations and beta reduction, Nat/Vec constructors,
+dependent context validation, substitution through types, and checked type/term
+conversion. Genuine dependent examples include `Sigma (Nat, Vec (a, Var 0))`.
+It has typed errors, no inference or proof search, and one budget that includes
+type work. Exhaustion remains inconclusive. Nat and Vec are additional
+primitives under D2, not derivations from finite Kan extensions.
+
+Remaining work: Nat induction and the length-indexed vector eliminator,
+dependent substitution/preservation and checker proofs, a dependent Lean
+embedding, and justification of conversion. A model identifying dependent
+Pi/Sigma with Kan extensions and the disclosed initiality assumptions remain
+obligations. The finite-fragment Lean theorems do not cover the new library.
 
 Exit: checked derivations and negative cases; substitution and preservation
 proofs for the implemented fragment; a precise remaining gap to Lean. If a

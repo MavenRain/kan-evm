@@ -42,10 +42,13 @@ value against a new diagram. This API is not a substitute for dependent typing.
 
 The [finite-term specification](finite-terms.md) now supplies an executable
 nondependent syntax with checked branches and environment-based evaluation.
-It does not discharge the dependent obligations below.
+The separate [dependent reference fragment](dependent-terms.md) implements
+Pi/Sigma and Nat/Vec constructors with dependent checking and beta conversion.
+It does not discharge the model or dependent metatheory obligations below.
 
-The next specification must provide judgments for contexts, substitutions,
-universe levels, types, terms, and definitional equality. Candidate notation:
+The [M1 dependent specification](dependent-calculus.md) supplies judgments without
+universes, as ruled by D3. The M2/full-language target must also provide universe
+levels. Candidate notation for that target:
 
     Γ context       Γ ⊢ A : U_l       Γ ⊢ t : A
     Δ ⊢ σ : Γ       Γ ⊢ t ≡ u : A
@@ -59,14 +62,14 @@ arbitrary category equality as a decision procedure for term conversion.
 
 | Obligation | Required evidence | Status |
 |---|---|---|
-| Primitive inventory | Complete syntax and rules, including all generators | Open |
-| Dependent products/sums | Formation, intro, elim, beta/eta and substitution | Finite semantic example only |
+| Primitive inventory | Complete syntax and rules, including all generators | Finite fragment and initial dependent subset documented; Nat/Vec eliminators and M2 generators remain open |
+| Dependent products/sums | Formation, intro, elim, beta/eta and substitution | Pi/Sigma checking, beta and substitution implemented; eta deferred, dependent proofs and categorical model open |
 | Universes | Stratification, level constraints, closure without type-in-type | Open |
 | Equality | Intensional identity and specified decidable conversion | Open |
-| Induction | Nat induction and indexed vector elimination, not just Church encodings | Open |
+| Induction | Nat induction and indexed vector elimination, not just Church encodings | Extra Nat/Vec formation and constructors implemented; induction eliminators remain open under the disclosed initiality assumptions |
 | Prop and quotients | Lean-compatible eliminations, irrelevance and computation policy | Open |
 | Safety | Weakening, substitution, preservation and appropriate progress theorem | Open |
-| Conversion algorithm | Soundness, completeness for chosen equality, termination | Finite normalize-and-compare implemented by `Finite_term.convert`, with typed errors and a shared node budget; declarative soundness/completeness, confluence, strong normalization and dependent conversion remain open |
+| Conversion algorithm | Soundness, completeness for chosen equality, termination | Checked normalize-and-compare implemented for the finite and initial dependent fragments with shared budgets; declarative soundness/completeness, confluence and strong normalization remain open |
 | Lean embedding | Typing and reduction preservation with explicit axiom accounting | Open |
 | Efficient representation | Correctness of sharing and specialized derived forms | Open |
 

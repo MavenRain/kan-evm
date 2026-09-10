@@ -133,17 +133,17 @@ not as done.
 | Lean feature | kan-evm status | Obligation that closes it |
 |---|---|---|
 | Universe levels (`Sort u`, `imax`) | Open. D3 sets M1 to no universes. | Add universe judgments and the `imax` Pi rule at M2. |
-| Dependent functions | In fragment, non-dependent only (`Ran`/`Project`). Dependent Pi is specified in Draft C. | Implement Draft C's Ran-along-`p` formation, introduction, elimination, beta. |
-| Inductive families | Open beyond the finite label-indexed fragment. | Draft C's D2 primitive inductive-family former, with the disclosed initiality assumption. |
+| Dependent functions | `Dependent_term` implements Pi formation, lambda/application and beta; its dependent metatheory is unproved. | Prove the dependent rules and supply their categorical model and Lean embedding. |
+| Inductive families | Nat/Vec formation and constructors implemented as extra primitives; their eliminators and a general inductive-family former remain open. | Complete D2's eliminators with disclosed initiality assumptions and prove their metatheory. |
 | Mutual and nested inductive types | Open. | Not scoped for M1; record as M2+ in the roadmap. |
 | Structure eta | Open; kan-evm has no eta at M1 (D4). | D4 defers Section/Ran eta to a later slice; disclosed gap until then. |
-| Recursors | In fragment for the finite case (`Case` on `Tag`). | Draft C's Sigma/Pi elimination forms generalize this to the dependent case. |
+| Recursors | Finite Case and dependent Sigma Split implemented; Nat/Vec induction eliminators remain open. | Implement the specified Nat and Vec eliminators and their computation rules. |
 | Quotients (`Quot`, `Quot.sound`) | Open; no quotient former in kan-evm. | Not scoped for M1 or Draft C; record as open in the roadmap. |
-| Definitional equality: beta, iota | In fragment. Iota is `Case`-of-`Tag`; beta is `Project`-of-`Section`, which is `app` of `lam` at an enumeration (see the correspondence table in docs/dependent-calculus.md:149-157). Both steps run in `normalize` (lib/finite_term.ml:187-190, lib/finite_term.ml:205-206). | None; closed for the finite fragment, which has no other function former. |
+| Definitional equality: beta, iota | In fragment. Iota is `Case`-of-`Tag`; beta is `Project`-of-`Section`, which is `app` of `lam` at an enumeration (see the correspondence table in docs/dependent-calculus.md:155-163). Both steps run in `normalize` (lib/finite_term.ml:187-190, lib/finite_term.ml:205-206). | None; closed for the finite fragment, which has no other function former. |
 | Definitional equality: eta | Open (D4: beta only at M1). | D4's disclosed gap; close when Pi/Sigma eta is scheduled. |
 | Definitional equality: delta, zeta | Open; kan-evm has no let-binding or named-constant unfolding construct. | Add `let` and top-level definitions with delta/zeta rules; scope not yet assigned. |
 | Proof irrelevance | Open; kan-evm has no `Prop`-like sort (D3, D6). | Depends on D3 (universes) and D6 (identity types); not scoped for M1. |
-| Nat and String literal reduction | Open; kan-evm has no `Nat` or `String` primitive with literal reduction. | D2's Nat induction principle is a prerequisite; literal reduction is not yet scoped. |
+| Nat and String literal reduction | Open; dependent Nat uses unary Zero/Succ constructors with no literal fast path; no String primitive. | D2's Nat induction principle is a prerequisite; literal reduction is not yet scoped. |
 | The three standard axioms | All 42 audited theorem names, including normalization/evaluation agreement and the conversion contracts, use only `propext`, `Quot.sound` and `Classical.choice`. | Maintain this bar for subsequent proofs; C7, strong normalization and confluence remain open. |
 | Axiom accounting (`#print axioms`) | `proofs/Axioms.lean` reports the 31 completed inventory theorem names, three public normalization corollaries, and eight conversion/comparison theorems. Results are in `validation.md`. | Extend the report as further theorems land. |
 | Safe-core exclusions (`unsafe`, `partial`, `sorryAx`, `native_decide`) | The proof-source scan has no excluded declarations or proof placeholders. The 42 audited theorem names pass the axiom bar. | Maintain these checks for subsequent proofs. |

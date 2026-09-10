@@ -5,3 +5,8 @@
 (library
  (name finite_term)
  (modules finite_term))
+
+(library
+ (name dependent_term)
+ (modules dependent_term dependent_core)
+ (private_modules dependent_core))
